@@ -17,6 +17,7 @@ import { FormWrapper } from "../reusable/form-wrapper";
 import { NonSearchableSelectField } from "../reusable/NonSearchableSelectField";
 import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
+import toast from "react-hot-toast";
 
 function uid() {
   return Math.random().toString(16).slice(2);
@@ -40,7 +41,6 @@ export default function AddBlockPopover() {
   const { workStartMin, workEndMin } = useWorkHoursStore();
 
   const [open, setOpen] = useState(false);
-  const [submitMsg, setSubmitMsg] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -67,10 +67,8 @@ export default function AddBlockPopover() {
   }, [blocks, duration, workStartMin, workEndMin]);
 
   const onSubmit = (values: FormValues) => {
-    setSubmitMsg(null);
-
     if (!suggested) {
-      setSubmitMsg("No available slot within working hours.");
+      toast.error("No available slot within working hours.");
       return;
     }
 
@@ -85,13 +83,12 @@ export default function AddBlockPopover() {
 
     addBlock(b);
 
-    setSubmitMsg("Added ✅");
+    toast.success("Block added successfully");
     form.reset({ title: "", type: values.type, duration: values.duration });
 
     // close after short delay (optional)
     setTimeout(() => {
       setOpen(false);
-      setSubmitMsg(null);
     }, 400);
   };
 
@@ -100,7 +97,6 @@ export default function AddBlockPopover() {
       {/* Button that opens modal */}
       <Button
         onClick={() => {
-          setSubmitMsg(null);
           setOpen(true);
         }}
       >
@@ -195,10 +191,6 @@ export default function AddBlockPopover() {
               Create
             </Button>
           </div>
-
-          {submitMsg ? (
-            <div className="text-sm text-neutral-700">{submitMsg}</div>
-          ) : null}
         </FormWrapper>
       </Modal>
     </>
